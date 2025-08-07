@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use LangDiff, please cite it as below."
+authors:
+- family-names: "Kim"
+  given-names: "Taeho"
+  email: "thk@a15t.com"
+  website: "https://blog.sapzil.org/"
+- family-names: "Lee"
+  given-names: "Heungsub"
+  email: "heungsub@a15t.com"
+  website: "https://subl.ee/"
+- family-names: "Jeong"
+  given-names: "Minyoung"
+  email: "my.j@a15t.com"
+- name: "Global AI Platform"
+  website: "https://globalaiplatform.com/"
+title: "LangDiff"
+version: 0.1.0
+date-released: 2025-08-11
+url: "https://github.com/globalaiplatform/langdiff"

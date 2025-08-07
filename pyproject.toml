@@ -1,0 +1,33 @@
+[project]
+name = "langdiff"
+version = "0.1.0"
+description = "LangDiff is a Python library that solves the hard problems of streaming structured LLM outputs to frontends."
+readme = "README.md"
+authors = [
+    { name = "Global AI Platform", email = "contact@a15t.com" }
+]
+maintainers = [
+    { name = "Taeho Kim", email = "thk@a15t.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "jiter>=0.10.0",
+    "jsonpatch>=1.33",
+    "jsonpointer>=3.0.0",
+    "pydantic>=2, <3",
+]
+license = "Apache-2.0"
+
+[project.urls]
+Homepage = "https://github.com/globalaiplatform/langdiff"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "openai>=1.99.1",
+    "pytest>=8.4.1",
+    "ruff>=0.12.8",
+]
