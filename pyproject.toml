@@ -31,3 +31,8 @@ dev = [
     "pytest>=8.4.1",
     "ruff>=0.12.8",
 ]
+docs = [
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.26.0",
+]
