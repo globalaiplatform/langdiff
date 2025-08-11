@@ -74,3 +74,8 @@ markdown_extensions:
       alternate_style: true
   - toc:
       permalink: true
+
+extra:
+  analytics:
+    provider: google
+    property: G-G5M7BPCPGL
