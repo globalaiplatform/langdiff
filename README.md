@@ -3,6 +3,7 @@
 [![docs](https://img.shields.io/badge/docs-latest-blue)](https://langdiff.readthedocs.io/en/latest/)
 [![pypi](https://img.shields.io/pypi/v/langdiff.svg)](https://pypi.python.org/pypi/langdiff)
 [![license](https://img.shields.io/github/license/globalaiplatform/langdiff.svg)](https://github.com/globalaiplatform/langdiff/blob/main/LICENSE)
+[![Global AI Platform](https://img.shields.io/badge/made%20by-Global%20AI%20Platform-646EFF)](https://globalaiplatform.com/)
 
 LangDiff is a Python library that solves the hard problems of streaming structured LLM outputs to frontends.
 
