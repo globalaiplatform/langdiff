@@ -1,5 +1,9 @@
 # ⚖️ LangDiff: Progressive UI from LLM
 
+[![docs](https://img.shields.io/badge/docs-latest-blue)](https://langdiff.readthedocs.io/en/latest/)
+[![pypi](https://img.shields.io/pypi/v/langdiff.svg)](https://pypi.python.org/pypi/langdiff)
+[![license](https://img.shields.io/github/license/globalaiplatform/langdiff.svg)](https://github.com/globalaiplatform/langdiff/blob/main/LICENSE)
+
 LangDiff is a Python library that solves the hard problems of streaming structured LLM outputs to frontends.
 
 ![Diagram](./docs/diagram.png)
