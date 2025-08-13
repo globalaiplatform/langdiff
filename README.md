@@ -73,7 +73,7 @@ data: ags"]}
 </td>
 <td>
 
-```python
+```http
 data: {"op": "add", "path": "/items/-", "value": "Buy a b"}
 data: {"op": "append", "path": "/items/0", "value": "anana"}
 data: {"op": "add", "path": "/items/-", "value": "Pack b"}
