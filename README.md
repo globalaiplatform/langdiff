@@ -16,23 +16,73 @@ LangDiff provides intelligent partial parsing with granular, type-safe events as
 ### Streaming Parsing
 - Define schemas for streaming structured outputs using Pydantic-style models.
 - Receive granular, type-safe callbacks (`on_append`, `on_update`, `on_complete`) as tokens stream in.
-- Derive Pydantic models from LangDiff models for seamless interop with existing libraries and SDKs like OpenAI SDK. 
+- Derive Pydantic models from LangDiff models for seamless interop with existing libraries and SDKs like OpenAI SDK.
+
+<table>
+<tr>
+<td>Without LangDiff</td> <td>With LangDiff</td>
+</tr>
+<tr>
+<td>
+
+```python
+parse_partial('{"it')
+parse_partial('{"items":')
+parse_partial('{"items": ["Buy a b')
+parse_partial('{"items": ["Buy a banana", "')
+parse_partial('{"items": ["Buy a banana", "Pack b')
+parse_partial('{"items": ["Buy a banana", "Pack bags"]}')
+```
+
+</td>
+<td>
+
+```python
+on_item_list_append("", index=0)
+on_item_append("Buy a b")
+on_item_append("anana")
+on_item_list_append("", index=1)
+on_item_append("Pack b")
+on_item_append("ags")
+```
+
+</td>
+</tr>
+</table>
 
 ### Change Tracking
 - Track mutations without changing your code patterns by instrumenting existing Pydantic models, or plain Python dict/list/objects.
 - Generate JSON Patch diffs automatically for efficient state synchronization between frontend and backend.
 
-```python
-@response.text.on_append
-def on_text_append(chunk: str, index: int):
-    ui.body[-1] = ui.body[-1][5:-6]  # remove <ins> tags
-    ui.body.append(f"<ins>{chunk}</ins>")
+<table>
+<tr>
+<td>Without LangDiff</td> <td>With LangDiff</td>
+</tr>
+<tr>
+<td>
 
-# Tracked UI changes:
-# {"op": "add", "path": "/body", "value": "<ins>Hell</ins>"}
-# {"op": "replace", "path": "/body/0", "value": "Hell"}
-# {"op": "add", "path": "/body", "value": "<ins>o, world!</ins>"}
+```http
+data: {"it
+data: ems":
+data:  ["Buy a b
+data: anana", "
+data: Pack b
+data: ags"]}
 ```
+
+</td>
+<td>
+
+```http
+data: {"op": "add", "path": "/items/-", "value": "Buy a b"}
+data: {"op": "append", "path": "/items/0", "value": "anana"}
+data: {"op": "add", "path": "/items/-", "value": "Pack b"}
+data: {"op": "append", "path": "/items/1", "value": "ags"}
+```
+
+</td>
+</tr>
+</table>
 
 ## Usage
 
