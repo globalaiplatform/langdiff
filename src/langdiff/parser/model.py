@@ -341,6 +341,13 @@ def unwrap_raw_type(type_hint: Any) -> type:
         return str
     elif issubclass(type_hint, Object):
         return type_hint.to_pydantic()
+    elif issubclass(type_hint, StreamingValue):
+        to_pydantic = getattr(type_hint, "to_pydantic", None)
+        if to_pydantic is None or not callable(to_pydantic):
+            raise ValueError(
+                f"Custom StreamingValue type {type_hint} must implement to_pydantic() method."
+            )
+        return to_pydantic()
     elif (
         type_hint is str
         or type_hint is int

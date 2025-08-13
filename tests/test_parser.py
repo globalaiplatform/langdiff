@@ -4,7 +4,7 @@ from typing import Union, Optional
 from pydantic import BaseModel
 
 from langdiff.parser.model import unwrap_raw_type, unwrap_noneable_type
-from langdiff import Field, Object, List, String, Atom, Parser
+from langdiff import Field, Object, List, String, Atom, Parser, StreamingValue
 
 
 class Block(Object):
@@ -405,6 +405,11 @@ def test_unwrap_raw_type():
         name: str
         age: int
 
+    class CustomStreamingValue(StreamingValue[dict]):
+        @staticmethod
+        def to_pydantic() -> type:
+            return dict
+
     assert unwrap_raw_type(Atom[str]) is str
     assert unwrap_raw_type(Atom[int]) is int
     assert unwrap_raw_type(Atom[float]) is float
@@ -428,6 +433,8 @@ def test_unwrap_raw_type():
     assert unwrap_raw_type(String) is str
 
     assert unwrap_raw_type(Block) == Block.to_pydantic()
+
+    assert unwrap_raw_type(CustomStreamingValue) is CustomStreamingValue.to_pydantic()
 
 
 def test_to_pydantic():
