@@ -320,7 +320,7 @@ class TodoAppDemo {
                     spaceSpan.classList.remove('token-highlight');
                 }, 100);
                 
-                this.logPatchEvent(`{"op": "add", "path": "/todos/${todoIndex}", "value": " "}`);
+                this.logPatchEvent(`{"op": "append", "path": "/todos/${todoIndex}", "value": " "}`);
             }
             
             // Add word with highlight
@@ -335,7 +335,7 @@ class TodoAppDemo {
             }, 100);
             
             // Log patch event
-            this.logPatchEvent(`{"op": "add", "path": "/todos/${todoIndex}", "value": "${word}"}`);
+            this.logPatchEvent(`{"op": "append", "path": "/todos/${todoIndex}", "value": "${word}"}`);
             
             todoItem.classList.add('updating');
             
@@ -402,17 +402,32 @@ function toggleLanguage(lang) {
     const enToggle = document.getElementById('lang-en');
     const cnToggle = document.getElementById('lang-cn');
     
-    if (lang === 'cn') {
+    if (lang === 'zh' || lang === 'cn') {
         body.classList.add('lang-chinese');
         cnToggle.classList.add('active');
         enToggle.classList.remove('active');
-        updateMetaTags('cn');
+        updateMetaTags('zh');
+        updateUrlParameter('zh');
     } else {
         body.classList.remove('lang-chinese');
         enToggle.classList.add('active');
         cnToggle.classList.remove('active');
         updateMetaTags('en');
+        updateUrlParameter('en');
     }
+}
+
+// Update URL parameter for language
+function updateUrlParameter(lang) {
+    const url = new URL(window.location);
+    
+    if (lang === 'zh') {
+        url.searchParams.set('lang', 'zh');
+    } else {
+        url.searchParams.delete('lang');
+    }
+    
+    window.history.pushState({}, '', url);
 }
 
 // Get URL parameter
@@ -430,7 +445,7 @@ function updateMetaTags(lang) {
             ogTitle: 'LangDiff - Progressive UI from LLM',
             ogDescription: 'See the difference between standard JSON streaming and LangDiff. Progressive UI updates from LLM responses with structured streaming.'
         },
-        cn: {
+        zh: {
             title: 'LangDiff - LLM 流式界面的新标准',
             description: '实现 LLM 响应的渐进式界面更新和结构化流式传输。',
             ogTitle: 'LangDiff - LLM 流式界面的新标准', 
@@ -453,14 +468,14 @@ function updateMetaTags(lang) {
     document.getElementById('twitter-description').setAttribute('content', content.ogDescription);
     
     // Update HTML lang attribute
-    document.documentElement.setAttribute('lang', lang === 'cn' ? 'zh-CN' : 'en');
+    document.documentElement.setAttribute('lang', lang === 'zh' ? 'zh-CN' : 'en');
 }
 
 // Initialize demo when page loads
 document.addEventListener('DOMContentLoaded', () => {
     // Check URL parameter for initial language
     const langParam = getUrlParameter('lang');
-    const initialLang = (langParam === 'cn' || langParam === 'zh') ? 'cn' : 'en';
+    const initialLang = langParam === 'zh' ? 'zh' : 'en';
     
     // Initialize language toggle with URL parameter or default to English
     toggleLanguage(initialLang);
