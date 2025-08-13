@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LangDiff - Progressive UI from LLM</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-top">
+                <div class="language-selector">
+                    <span class="lang-toggle" onclick="toggleLanguage('en')" id="lang-en">English</span>
+                    <span class="lang-separator"> | </span>
+                    <span class="lang-toggle" onclick="toggleLanguage('cn')" id="lang-cn">中文</span>
+                </div>
+                <div class="github-badge">
+                    <a href="https://github.com/globalaiplatform/langdiff" target="_blank">
+                        <img src="https://img.shields.io/github/stars/globalaiplatform/langdiff?style=social" alt="GitHub stars">
+                    </a>
+                </div>
+            </div>
+            <h1>⚖️ <span class="lang-en">LangDiff Demo</span><span class="lang-cn">LangDiff 演示</span></h1>
+            <p class="lang-en">Progressive UI from LLM - See the difference between standard JSON streaming and LangDiff</p>
+            <p class="lang-cn">大语言模型渐进式界面 - 对比标准 JSON 流式传输与 LangDiff 的差异</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="explanation">
+            <div class="lang-en">
+                <h3>Why LangDiff?</h3>
+                <p>Ever tried streaming LLM responses to your users? You know the pain:</p>
+                <ul>
+                    <li><strong>The problem:</strong> Structured output keeps failing on incomplete chunks. Users stare at loading spinners.</li>
+                    <li><strong>The solution:</strong> LangDiff streams structured updates instantly. Your UI feels alive.</li>
+                    <li><strong>The result:</strong> Users see progress immediately. No more waiting. No more broken UX.</li>
+                </ul>
+            </div>
+            <div class="lang-cn">
+                <h3>为什么选择 LangDiff？</h3>
+                <p>您是否尝试过向用户流式传输大语言模型响应？您一定深知其中的痛点：</p>
+                <ul>
+                    <li><strong>问题所在：</strong>结构化输出在处理不完整数据块时频繁失败，用户只能盯着加载动画等待。</li>
+                    <li><strong>解决方案：</strong>LangDiff 即时传输结构化更新，让您的界面焕发生机。</li>
+                    <li><strong>最终效果：</strong>用户立即看到进度反馈，告别漫长等待，告别糟糕的用户体验。</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="demo-grid">
+            <!-- Left Panel: Vanilla Streaming -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>Vanilla Streaming</h2>
+                    <p>Users see choppy, unpredictable loading</p>
+                </div>
+                
+                <!-- Main UI Display -->
+                <div class="ui-display">
+                    <div class="mock-app">
+                        <div class="app-header">📋 Todo App</div>
+                        <div class="todo-list" id="standard-todo-list">
+                            <!-- Todos will appear here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Technical Details (Collapsible) -->
+                <details class="tech-details" open>
+                    <summary>🔍 Behind the Scenes</summary>
+                    <div class="tech-content">
+                        <div class="network-log" id="standard-network-log">
+                            <!-- Network events will appear here -->
+                        </div>
+                    </div>
+                </details>
+
+            </div>
+
+            <!-- Right Panel: LangDiff -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>LangDiff Streaming</h2>
+                    <p>Users see smooth, progressive loading</p>
+                </div>
+                
+                <!-- Main UI Display -->
+                <div class="ui-display">
+                    <div class="mock-app langdiff-app">
+                        <div class="app-header">📋 Todo App</div>
+                        <div class="todo-list" id="langdiff-todo-list">
+                            <!-- Todos will appear here with smooth animations -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Technical Details (Collapsible) -->
+                <details class="tech-details" open>
+                    <summary>🔍 Behind the Scenes</summary>
+                    <div class="tech-content">
+                        <div class="patch-log" id="langdiff-patch-log">
+                            <!-- Patch events will appear here -->
+                        </div>
+                    </div>
+                </details>
+
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="start-demo" class="demo-button" style="display: none;">▶️ Start Demo</button>
+            <button id="reset-demo" class="demo-button secondary">🔄 Restart Demo</button>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Learn more at <a href="https://github.com/globalaiplatform/langdiff">github.com/globalaiplatform/langdiff</a></p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/fast-json-patch@3.1.1/dist/fast-json-patch.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
