@@ -1,8 +1,9 @@
 import json
+from typing import Union, Optional
 
 from pydantic import BaseModel
 
-from langdiff.parser.model import unwrap_raw_type
+from langdiff.parser.model import unwrap_raw_type, unwrap_noneable_type
 from langdiff import Field, Object, List, String, Atom, Parser
 
 
@@ -334,6 +335,49 @@ def test_null_complete_value():
     assert events == [("on_item_complete", None)]  # Still no events after completion
 
 
+def test_null_pydantic_atom():
+    class Item(BaseModel):
+        name: str | None
+
+    class StreamingContainer(Object):
+        item: Atom[Item | None]
+
+    container = StreamingContainer()
+    events = []
+
+    @container.item.on_complete
+    def on_item_complete(item: Item | None):
+        events.append(("on_item_complete", item))
+
+    container.update({"item": None})
+    assert events == []  # Expect no events since item is None
+
+    container.complete()
+    assert events == [("on_item_complete", None)]  # Still no events after completion
+
+
+def test_null_pydantic_atom_non_null():
+    class Item(BaseModel):
+        name: str | None
+
+    class StreamingContainer(Object):
+        item: Atom[Item | None]
+
+    container = StreamingContainer()
+    events = []
+
+    @container.item.on_complete
+    def on_item_complete(item: Item | None):
+        events.append(("on_item_complete", item))
+
+    container.update({"item": {"name": "test"}})
+    assert events == []
+    container.complete()
+    assert events == [
+        ("on_item_complete", Item(name="test"))
+    ]  # Expect item after completion
+
+
 def test_null_streaming_string():
     class StreamingContainer(Object):
         item: String
@@ -393,3 +437,9 @@ def test_to_pydantic():
     blocks_field = CreateBlocksModel.model_fields["blocks"]
     assert blocks_field.annotation == list[Block.to_pydantic()]
     assert blocks_field.description == "max number of blocks is 5"
+
+
+def test_unwrap_noneable_type():
+    assert unwrap_noneable_type(str | None) is str
+    assert unwrap_noneable_type(Union[str, None]) is str
+    assert unwrap_noneable_type(Optional[str]) is str
