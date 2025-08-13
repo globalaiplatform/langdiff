@@ -65,7 +65,7 @@ class Object(StreamingValue[dict]):
         for key, type_hint in type(self).__annotations__.items():
             self._keys.append(key)
 
-            # handle StreamingList[T], CompleteValue[T]
+            # handle List[T], Atom[T]
             if hasattr(type_hint, "__origin__"):
                 item_cls = typing.get_args(type_hint)[0]
                 setattr(self, key, type_hint.__origin__(item_cls))
@@ -138,7 +138,7 @@ class List(Generic[T], StreamingValue[list]):
     """Represents a JSON array that is streamed.
 
     This class can handle a list of items that are themselves `StreamingValue`s
-    (like `StreamingObject` or `StreamingString`) or complete values. It provides
+    (like `langdiff.Object` or `langdiff.String`) or complete values. It provides
     an `on_append` callback that is fired when a new item is added to the list.
     """
 
@@ -270,7 +270,7 @@ class String(StreamingValue[str | None]):
         else:
             if value is None or not value.startswith(self._value):
                 raise ValueError(
-                    "StreamingString can only be updated with a continuation of the current value."
+                    "langdiff.String can only be updated with a continuation of the current value."
                 )
             if len(value) == len(self._value):
                 return
@@ -290,8 +290,8 @@ class Atom(Generic[T], StreamingValue[T]):
 
     This is useful for types like numbers, booleans, or even entire objects/lists
     that are not streamed part-by-part but are present completely once available.
-    The `on_complete` callback is triggered when the parent `StreamingObject` or
-    `StreamingList` determines that this value is complete.
+    The `on_complete` callback is triggered when the parent `langdiff.Object` or
+    `langdiff.List` determines that this value is complete.
     """
 
     _value: T | None
@@ -325,7 +325,7 @@ def unwrap_raw_type(type_hint: Any) -> type:
     # - Atom[T] => T
     # - List[T] => list[unwrap(T)]
     # - String => str
-    # - T extends StreamableModel => T.to_pydantic()
+    # - T extends Object => T.to_pydantic()
     if hasattr(type_hint, "__origin__"):
         origin = type_hint.__origin__
         if origin is Atom:
@@ -346,5 +346,5 @@ def unwrap_raw_type(type_hint: Any) -> type:
     ):
         return type_hint
     raise ValueError(
-        f"Unsupported type hint: {type_hint}. Expected Atom, List, String, or StreamableModel subclass."
+        f"Unsupported type hint: {type_hint}. Expected LangDiff Atom, List, String, or Object subclass."
     )
