@@ -3,7 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LangDiff - Progressive UI from LLM</title>
+    
+    <!-- Basic Meta -->
+    <title id="page-title">LangDiff - Progressive UI from LLM</title>
+    <meta name="description" id="page-description" content="See the difference between standard JSON streaming and LangDiff. Progressive UI updates from LLM responses with structured streaming.">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" id="og-url" content="https://globalaiplatform.github.io/langdiff/">
+    <meta property="og:title" id="og-title" content="LangDiff - Progressive UI from LLM">
+    <meta property="og:description" id="og-description" content="See the difference between standard JSON streaming and LangDiff. Progressive UI updates from LLM responses with structured streaming.">
+    <meta property="og:image" id="og-image" content="https://globalaiplatform.github.io/langdiff/og-image.png">
+    <meta property="og:site_name" content="LangDiff">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" id="twitter-url" content="https://globalaiplatform.github.io/langdiff/">
+    <meta property="twitter:title" id="twitter-title" content="LangDiff - Progressive UI from LLM">
+    <meta property="twitter:description" id="twitter-description" content="See the difference between standard JSON streaming and LangDiff. Progressive UI updates from LLM responses with structured streaming.">
+    <meta property="twitter:image" id="twitter-image" content="https://globalaiplatform.github.io/langdiff/og-image.png">
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -23,7 +42,7 @@
             </div>
             <h1>⚖️ <span class="lang-en">LangDiff Demo</span><span class="lang-cn">LangDiff 演示</span></h1>
             <p class="lang-en">Progressive UI from LLM - See the difference between standard JSON streaming and LangDiff</p>
-            <p class="lang-cn">大语言模型渐进式界面 - 对比标准 JSON 流式传输与 LangDiff 的差异</p>
+            <p class="lang-cn">LLM 流式界面的新标准</p>
         </div>
     </header>
 
@@ -40,11 +59,11 @@
             </div>
             <div class="lang-cn">
                 <h3>为什么选择 LangDiff？</h3>
-                <p>您是否尝试过向用户流式传输大语言模型响应？您一定深知其中的痛点：</p>
                 <ul>
-                    <li><strong>问题所在：</strong>结构化输出在处理不完整数据块时频繁失败，用户只能盯着加载动画等待。</li>
-                    <li><strong>解决方案：</strong>LangDiff 即时传输结构化更新，让您的界面焕发生机。</li>
-                    <li><strong>最终效果：</strong>用户立即看到进度反馈，告别漫长等待，告别糟糕的用户体验。</li>
+                    <li><strong>即时更新：</strong>生成过程中实时传输结构化数据</li>
+                    <li><strong>安全解析：</strong>基于 Pydantic 风格的模式保证类型安全</li>
+                    <li><strong>高效传输：</strong>仅以 JSON Patch 发送变更部分</li>
+                    <li><strong>灵活架构：</strong>服务器与客户端可独立演进</li>
                 </ul>
             </div>
         </div>
@@ -53,7 +72,7 @@
             <!-- Left Panel: Vanilla Streaming -->
             <div class="panel">
                 <div class="panel-header">
-                    <h2>Vanilla Streaming</h2>
+                    <h2>Your Streaming</h2>
                     <p>Users see choppy, unpredictable loading</p>
                 </div>
                 

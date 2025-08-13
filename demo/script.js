@@ -406,17 +406,64 @@ function toggleLanguage(lang) {
         body.classList.add('lang-chinese');
         cnToggle.classList.add('active');
         enToggle.classList.remove('active');
+        updateMetaTags('cn');
     } else {
         body.classList.remove('lang-chinese');
         enToggle.classList.add('active');
         cnToggle.classList.remove('active');
+        updateMetaTags('en');
     }
+}
+
+// Get URL parameter
+function getUrlParameter(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+}
+
+// Update meta tags for SEO and social sharing
+function updateMetaTags(lang) {
+    const metaContent = {
+        en: {
+            title: 'LangDiff - Progressive UI from LLM',
+            description: 'See the difference between standard JSON streaming and LangDiff. Progressive UI updates from LLM responses with structured streaming.',
+            ogTitle: 'LangDiff - Progressive UI from LLM',
+            ogDescription: 'See the difference between standard JSON streaming and LangDiff. Progressive UI updates from LLM responses with structured streaming.'
+        },
+        cn: {
+            title: 'LangDiff - LLM 流式界面的新标准',
+            description: '实现 LLM 响应的渐进式界面更新和结构化流式传输。',
+            ogTitle: 'LangDiff - LLM 流式界面的新标准', 
+            ogDescription: '实现 LLM 响应的渐进式界面更新和结构化流式传输。'
+        }
+    };
+    
+    const content = metaContent[lang] || metaContent.en;
+    
+    // Update page title and description
+    document.getElementById('page-title').textContent = content.title;
+    document.getElementById('page-description').setAttribute('content', content.description);
+    
+    // Update Open Graph tags
+    document.getElementById('og-title').setAttribute('content', content.ogTitle);
+    document.getElementById('og-description').setAttribute('content', content.ogDescription);
+    
+    // Update Twitter tags
+    document.getElementById('twitter-title').setAttribute('content', content.ogTitle);
+    document.getElementById('twitter-description').setAttribute('content', content.ogDescription);
+    
+    // Update HTML lang attribute
+    document.documentElement.setAttribute('lang', lang === 'cn' ? 'zh-CN' : 'en');
 }
 
 // Initialize demo when page loads
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize language toggle - default to English
-    toggleLanguage('en');
+    // Check URL parameter for initial language
+    const langParam = getUrlParameter('lang');
+    const initialLang = (langParam === 'cn' || langParam === 'zh') ? 'cn' : 'en';
+    
+    // Initialize language toggle with URL parameter or default to English
+    toggleLanguage(initialLang);
     
     // Initialize demo
     new TodoAppDemo();
