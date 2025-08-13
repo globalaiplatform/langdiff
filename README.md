@@ -11,6 +11,13 @@ LangDiff is a Python library that solves the hard problems of streaming structur
 
 LangDiff provides intelligent partial parsing with granular, type-safe events as JSON structures build token by token, plus automatic JSON Patch generation for efficient frontend synchronization. Build responsive AI applications where your backend structures and frontend experiences can evolve independently. Read more about it on the [Motivation](#motivation) section.
 
+## Demo
+
+Click the image below.
+
+[<img width="1175" height="537" alt="image" src="https://github.com/user-attachments/assets/3ce97baf-8856-44b0-8f40-b9db75e05950" />](https://globalaiplatform.github.io/langdiff/)
+
+
 ## Core Features
 
 ### Streaming Parsing
