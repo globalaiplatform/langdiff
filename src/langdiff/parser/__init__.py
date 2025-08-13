@@ -4,6 +4,7 @@ from .model import (
     Object,
     String,
     Field,
+    StreamingValue,
 )
 from .parser import Parser
 
@@ -14,4 +15,5 @@ __all__ = [
     "String",
     "Field",
     "Parser",
+    "StreamingValue",
 ]

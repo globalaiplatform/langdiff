@@ -5,6 +5,7 @@ from .parser import (
     String,
     Field,
     Parser,
+    StreamingValue,
 )
 from .tracker import (
     ChangeTracker,
@@ -23,6 +24,7 @@ __all__ = [
     "String",
     "Field",
     "Parser",
+    "StreamingValue",
     # tracker
     "ChangeTracker",
     "JSONPatchChangeTracker",
