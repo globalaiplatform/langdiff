@@ -161,6 +161,45 @@ class Object(StreamingValue[dict]):
         cls._pydantic_model = model
         return model
 
+    @classmethod
+    def from_pydantic(cls, pydantic_model: type[BaseModel]) -> type["Object"]:
+        """Create a streaming Object class from a Pydantic model.
+
+        Args:
+            pydantic_model: A Pydantic BaseModel class to convert
+
+        Returns:
+            A dynamically generated Object subclass with equivalent streaming fields
+        """
+        # Check if we already have a cached version
+        cache_key = f"_streaming_class_{pydantic_model.__name__}"
+        cached_class = getattr(pydantic_model, cache_key, None)
+        if cached_class is not None:
+            return cached_class
+
+        # Create annotations dict for the new Object subclass
+        annotations = {}
+
+        for field_name, field_info in pydantic_model.model_fields.items():
+            streaming_type = _pydantic_type_to_streaming_type(field_info.annotation)
+            annotations[field_name] = streaming_type
+
+        # Create the new Object subclass dynamically
+        class_name = f"Streaming{pydantic_model.__name__}"
+        streaming_class = type(
+            class_name,
+            (Object,),
+            {
+                "__annotations__": annotations,
+                "__doc__": pydantic_model.__doc__,
+            },
+        )
+
+        # Cache the result to avoid infinite recursion
+        setattr(pydantic_model, cache_key, streaming_class)
+
+        return streaming_class
+
 
 class List(Generic[T], StreamingValue[list]):
     """Represents a JSON array that is streamed.
@@ -354,6 +393,93 @@ def _extract_pydantic_hint(type_hint: Any) -> type | None:
                 if isinstance(metadata, PydanticType):
                     return metadata.pydantic_type
     return None
+
+
+def _pydantic_type_to_streaming_type(type_hint: Any) -> Any:
+    """Convert a Pydantic type annotation to equivalent LangDiff streaming type.
+
+    Args:
+        type_hint: Pydantic type annotation
+
+    Returns:
+        Equivalent LangDiff streaming type
+    """
+    # Handle basic types
+    if type_hint is str:
+        return String
+    elif type_hint in (int, float, bool):
+        return Atom[type_hint]
+
+    # Handle generic types (List, list, etc.)
+    origin = typing.get_origin(type_hint)
+    if origin is list or origin is typing.List:
+        args = typing.get_args(type_hint)
+        if args:
+            item_type = _pydantic_type_to_streaming_class(args[0])
+            return List[item_type]
+        else:
+            # For untyped lists, use string as default
+            return List[String]
+
+    # Handle nested Pydantic models
+    if isinstance(type_hint, type) and issubclass(type_hint, BaseModel):
+        return Object.from_pydantic(type_hint)
+
+    # Handle Union types (including Optional)
+    if origin is typing.Union:
+        args = typing.get_args(type_hint)
+        # For Optional[T] (which is Union[T, None]), extract T
+        if len(args) == 2 and type(None) in args:
+            non_none_type = args[0] if args[1] is type(None) else args[1]
+            return _pydantic_type_to_streaming_type(non_none_type)
+        # For other Union types, default to first type
+        return _pydantic_type_to_streaming_type(args[0])
+
+    # For custom types or unrecognized types, wrap in Atom
+    return Atom[type_hint]
+
+
+def _pydantic_type_to_streaming_class(type_hint: Any) -> type:
+    """Convert a Pydantic type annotation to streaming class for use in List[T].
+
+    Args:
+        type_hint: Pydantic type annotation
+
+    Returns:
+        Streaming class (not generic instance)
+    """
+    # Handle basic types
+    if type_hint is str:
+        return String
+    elif type_hint in (int, float, bool):
+        # For List item types, we need the class not the generic instance
+        class AtomClass(Atom):
+            def __init__(self):
+                super().__init__(type_hint)
+
+        return AtomClass
+
+    # Handle nested Pydantic models
+    if isinstance(type_hint, type) and issubclass(type_hint, BaseModel):
+        return Object.from_pydantic(type_hint)
+
+    # Handle Union types (including Optional)
+    origin = typing.get_origin(type_hint)
+    if origin is typing.Union:
+        args = typing.get_args(type_hint)
+        # For Optional[T] (which is Union[T, None]), extract T
+        if len(args) == 2 and type(None) in args:
+            non_none_type = args[0] if args[1] is type(None) else args[1]
+            return _pydantic_type_to_streaming_class(non_none_type)
+        # For other Union types, default to first type
+        return _pydantic_type_to_streaming_class(args[0])
+
+    # For unrecognized types, create an Atom class
+    class AtomClass(Atom):
+        def __init__(self):
+            super().__init__(type_hint)
+
+    return AtomClass
 
 
 def unwrap_raw_type(type_hint: Any) -> type:

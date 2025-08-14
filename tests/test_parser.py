@@ -567,6 +567,135 @@ def test_unwrap_raw_type_with_pydantic_hint():
     # Test Atom with PydanticType
     assert unwrap_raw_type(Annotated[Atom[str], PydanticType(UUID)]) is UUID
 
+
+def test_from_pydantic_basic_types():
+    """Test Object.from_pydantic with basic types."""
+
+    class SimplePydantic(BaseModel):
+        name: str
+        age: int
+        height: float
+        is_active: bool
+
+    StreamingSimple = Object.from_pydantic(SimplePydantic)
+
+    # Test that the class was created correctly
+    assert issubclass(StreamingSimple, Object)
+    assert StreamingSimple.__name__ == "StreamingSimplePydantic"
+
+    # Test field types
+    instance = StreamingSimple()
+    assert isinstance(instance.name, String)
+    assert isinstance(instance.age, Atom)
+    assert isinstance(instance.height, Atom)
+    assert isinstance(instance.is_active, Atom)
+
+
+def test_from_pydantic_lists():
+    """Test Object.from_pydantic with list types."""
+
+    class ListPydantic(BaseModel):
+        titles: list[str]
+        scores: list[int]
+
+    StreamingList = Object.from_pydantic(ListPydantic)
+    instance = StreamingList()
+
+    # Test list field types
+    assert isinstance(instance.titles, List)
+    assert isinstance(instance.scores, List)
+
+
+def test_from_pydantic_nested_models():
+    """Test Object.from_pydantic with nested Pydantic models."""
+
+    class NestedPydantic(BaseModel):
+        content: str  # Avoid 'value' which conflicts with Object.value property
+        count: int
+
+    class ParentPydantic(BaseModel):
+        nested: NestedPydantic
+        nested_list: list[NestedPydantic]
+
+    StreamingParent = Object.from_pydantic(ParentPydantic)
+    instance = StreamingParent()
+
+    # Test nested object
+    assert isinstance(instance.nested, Object)
+    assert isinstance(instance.nested_list, List)
+
+
+def test_from_pydantic_example_usage():
+    """Test the example usage pattern from the user's request."""
+
+    # Define the Pydantic models as in the example
+    class Page(BaseModel):
+        titles: list[str]
+        sections: list[str]
+
+    class SectionUI(BaseModel):
+        title: str
+        content: str
+
+    class PageUI(BaseModel):
+        sections: list[SectionUI]
+
+    # Generate streaming equivalent
+    StreamingPage = Object.from_pydantic(Page)
+    response = StreamingPage()
+
+    # Test that we can set up the callbacks as in the example
+    ui = PageUI(sections=[])
+
+    events = []
+
+    @response.titles.on_append
+    def on_titles_append(title: String, index: int):
+        events.append(("titles_append", index))
+        ui.sections.append(SectionUI(title="", content=""))
+
+        @title.on_append
+        def on_title_append(chunk: str):
+            events.append(("title_chunk", index, chunk))
+            ui.sections[index].title += chunk
+
+    @response.sections.on_append
+    def on_sections_append(section: String, index: int):
+        events.append(("sections_append", index))
+
+        @section.on_append
+        def on_section_append(chunk: str):
+            events.append(("section_chunk", index, chunk))
+            if index < len(ui.sections):
+                ui.sections[index].content += chunk
+
+    # Simulate streaming data with proper sequence
+    # First update: single title, no sections
+    response.update({"titles": ["Title 1"]})
+
+    # Second update: complete first title, add second title
+    response.update({"titles": ["Title 1", "Title 2"]})
+
+    # Third update: add sections
+    response.update(
+        {"titles": ["Title 1", "Title 2"], "sections": ["Section 1 content"]}
+    )
+
+    # Complete the response
+    response.complete()
+
+    # Verify events fired correctly - should have both title appends
+    assert ("titles_append", 0) in events
+    assert ("titles_append", 1) in events
+    assert ("sections_append", 0) in events
+
+    # Verify UI was updated - should have 2 sections created from titles
+    assert len(ui.sections) >= 2
+    assert ui.sections[0].title == "Title 1"
+    assert ui.sections[1].title == "Title 2"
+    if len(ui.sections) > 0:
+        assert ui.sections[0].content == "Section 1 content"
+
     # Test List with PydanticType
     assert (
         unwrap_raw_type(Annotated[List[String], PydanticType(list[UUID])]) == list[UUID]
