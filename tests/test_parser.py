@@ -1,8 +1,19 @@
 import json
+from uuid import UUID
+from typing import Annotated
 
 from pydantic import BaseModel
 
-from langdiff import Field, Object, List, String, Atom, Parser, StreamingValue
+from langdiff import (
+    Field,
+    Object,
+    List,
+    String,
+    Atom,
+    Parser,
+    StreamingValue,
+    PydanticType,
+)
 from langdiff.parser.model import unwrap_raw_type
 
 
@@ -464,3 +475,127 @@ def test_to_pydantic():
     blocks_field = CreateBlocksModel.model_fields["blocks"]
     assert blocks_field.annotation == list[Block.to_pydantic()]
     assert blocks_field.description == "max number of blocks is 5"
+
+
+def test_pydantic_hint_string():
+    """Test PydanticType with String fields converting to custom types."""
+
+    class ItemWithUUID(Object):
+        id: Annotated[String, PydanticType(UUID)]
+        name: String
+
+    # Test that the streaming functionality still works
+    item = ItemWithUUID()
+    events = []
+
+    @item.id.on_complete
+    def on_id_complete(id_value: str):
+        events.append(("id_complete", id_value))
+
+    @item.name.on_complete
+    def on_name_complete(name_value: str):
+        events.append(("name_complete", name_value))
+
+    item.update({"id": "123e4567-e89b-12d3-a456-426614174000", "name": "Test Item"})
+    item.complete()
+
+    assert events == [
+        ("id_complete", "123e4567-e89b-12d3-a456-426614174000"),
+        ("name_complete", "Test Item"),
+    ]
+
+    # Test Pydantic model generation
+    ItemModel = ItemWithUUID.to_pydantic()
+    assert ItemModel.model_fields["id"].annotation is UUID
+    assert ItemModel.model_fields["name"].annotation is str
+
+
+def test_pydantic_hint_atom():
+    """Test PydanticType with Atom fields."""
+
+    class ItemWithHints(Object):
+        user_id: Annotated[Atom[str], PydanticType(UUID)]
+        score: Annotated[Atom[float], PydanticType(int)]  # Custom conversion
+        regular_field: Atom[str]
+
+    # Test Pydantic model generation
+    ItemModel = ItemWithHints.to_pydantic()
+    assert ItemModel.model_fields["user_id"].annotation is UUID
+    assert ItemModel.model_fields["score"].annotation is int
+    assert ItemModel.model_fields["regular_field"].annotation is str
+
+
+def test_pydantic_hint_list():
+    """Test PydanticType with List fields."""
+
+    class ItemWithListHints(Object):
+        tags: Annotated[List[String], PydanticType(list[UUID])]
+        regular_tags: List[String]
+
+    # Test Pydantic model generation
+    ItemModel = ItemWithListHints.to_pydantic()
+    assert ItemModel.model_fields["tags"].annotation == list[UUID]
+    assert ItemModel.model_fields["regular_tags"].annotation == list[str]
+
+
+def test_pydantic_hint_nested_object():
+    """Test PydanticType with nested objects."""
+
+    class NestedItem(Object):
+        value: String
+
+    class CustomNestedModel(BaseModel):
+        custom_value: str
+
+    class ItemWithNestedHints(Object):
+        nested: Annotated[NestedItem, PydanticType(CustomNestedModel)]
+        regular_nested: NestedItem
+
+    # Test Pydantic model generation
+    ItemModel = ItemWithNestedHints.to_pydantic()
+    assert ItemModel.model_fields["nested"].annotation is CustomNestedModel
+    assert (
+        ItemModel.model_fields["regular_nested"].annotation == NestedItem.to_pydantic()
+    )
+
+
+def test_unwrap_raw_type_with_pydantic_hint():
+    """Test unwrap_raw_type function with PydanticType annotations."""
+    # Test String with PydanticType
+    assert unwrap_raw_type(Annotated[String, PydanticType(UUID)]) is UUID
+
+    # Test Atom with PydanticType
+    assert unwrap_raw_type(Annotated[Atom[str], PydanticType(UUID)]) is UUID
+
+    # Test List with PydanticType
+    assert (
+        unwrap_raw_type(Annotated[List[String], PydanticType(list[UUID])]) == list[UUID]
+    )
+
+    # Test multiple annotations (PydanticType should take precedence)
+    assert (
+        unwrap_raw_type(
+            Annotated[
+                String,
+                "some other annotation",
+                PydanticType(UUID),
+                "another annotation",
+            ]
+        )
+        is UUID
+    )
+
+    # Test without PydanticType (should fall back to normal behavior)
+    assert unwrap_raw_type(Annotated[String, "some annotation"]) is str
+    assert unwrap_raw_type(Annotated[Atom[int], "some annotation"]) is int
+
+
+def test_pydantic_hint_multiple_annotations():
+    """Test that PydanticType works with other annotations."""
+
+    class ItemWithMultipleAnnotations(Object):
+        field: Annotated[String, "documentation", PydanticType(UUID), "more docs"]
+
+    # Test Pydantic model generation
+    ItemModel = ItemWithMultipleAnnotations.to_pydantic()
+    assert ItemModel.model_fields["field"].annotation is UUID

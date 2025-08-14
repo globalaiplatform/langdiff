@@ -5,6 +5,7 @@ from .model import (
     String,
     Field,
     StreamingValue,
+    PydanticType,
 )
 from .parser import Parser
 
@@ -16,4 +17,5 @@ __all__ = [
     "Field",
     "Parser",
     "StreamingValue",
+    "PydanticType",
 ]
