@@ -1,5 +1,5 @@
 import typing
-from typing import Generic, Callable, Any, TypeVar
+from typing import Generic, Callable, Any, TypeVar, Annotated
 
 import pydantic
 from pydantic import BaseModel
@@ -9,6 +9,27 @@ from langdiff.parser.decoder import get_decoder
 T = TypeVar("T")
 
 Field = pydantic.Field
+
+
+class PydanticType:
+    """A hint that specifies the Pydantic type to use when converting to Pydantic models.
+
+    This is used with typing.Annotated to provide custom type hints for Pydantic model derivation.
+
+    Example:
+        class Item(Object):
+            field: Annotated[String, PydanticType(UUID)]
+
+        When Item.to_pydantic() is called, the generated field will have type UUID instead of str.
+    """
+
+    def __init__(self, pydantic_type: Any):
+        """Initialize with the desired Pydantic type.
+
+        Args:
+            pydantic_type: The type to use in the generated Pydantic model
+        """
+        self.pydantic_type = pydantic_type
 
 
 class StreamingValue(Generic[T]):
@@ -67,12 +88,17 @@ class Object(StreamingValue[dict]):
         for key, type_hint in type(self).__annotations__.items():
             self._keys.append(key)
 
+            # Extract base type from Annotated[T, PydanticType(...), ...]
+            base_type = type_hint
+            if typing.get_origin(type_hint) is Annotated:
+                base_type = typing.get_args(type_hint)[0]
+
             # handle List[T], Atom[T]
-            if hasattr(type_hint, "__origin__"):
-                item_cls = typing.get_args(type_hint)[0]
-                setattr(self, key, type_hint.__origin__(item_cls))
+            if hasattr(base_type, "__origin__"):
+                item_cls = typing.get_args(base_type)[0]
+                setattr(self, key, base_type.__origin__(item_cls))
             else:
-                setattr(self, key, type_hint())
+                setattr(self, key, base_type())
 
     def on_update(self, func: Callable[[dict], Any]):
         """Register a callback that is called whenever the object is updated."""
@@ -318,12 +344,35 @@ class Atom(Generic[T], StreamingValue[T]):
         return self._value
 
 
+def _extract_pydantic_hint(type_hint: Any) -> type | None:
+    """Extract PydanticType from Annotated type if present."""
+    if typing.get_origin(type_hint) is Annotated:
+        args = typing.get_args(type_hint)
+        if len(args) >= 2:
+            # Look for PydanticType in the metadata
+            for metadata in args[1:]:
+                if isinstance(metadata, PydanticType):
+                    return metadata.pydantic_type
+    return None
+
+
 def unwrap_raw_type(type_hint: Any) -> type:
     # Possible types:
+    # - Annotated[T, PydanticType(U)] => U (custom Pydantic type)
     # - Atom[T] => T
     # - List[T] => list[unwrap(T)]
     # - String => str
     # - T extends Object => T.to_pydantic()
+
+    # First check for PydanticType in Annotated types
+    pydantic_hint = _extract_pydantic_hint(type_hint)
+    if pydantic_hint is not None:
+        return pydantic_hint
+
+    # Handle Annotated[T, ...] by extracting the base type
+    if typing.get_origin(type_hint) is Annotated:
+        type_hint = typing.get_args(type_hint)[0]
+
     if hasattr(type_hint, "__origin__"):
         origin = type_hint.__origin__
         if origin is Atom:
