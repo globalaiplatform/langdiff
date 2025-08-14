@@ -1,9 +1,10 @@
 import typing
-from types import UnionType
 from typing import Generic, Callable, Any, TypeVar
 
 import pydantic
 from pydantic import BaseModel
+
+from langdiff.parser.decoder import get_decoder
 
 T = TypeVar("T")
 
@@ -155,9 +156,7 @@ class List(Generic[T], StreamingValue[list]):
         self._value = []
         self._item_cls = item_cls
         self._item_streaming = issubclass(item_cls, StreamingValue)
-        self._decode = (
-            item_cls.model_validate if issubclass(item_cls, BaseModel) else None
-        )
+        self._decode = get_decoder(item_cls) if not self._item_streaming else None
         self._streaming_values = []
         self._on_append_funcs = []
 
@@ -300,12 +299,7 @@ class Atom(Generic[T], StreamingValue[T]):
     def __init__(self, item_cls: type[T]):
         super().__init__()
         self._value = None
-        actual_item_cls = unwrap_noneable_type(item_cls)
-        self._decode = (
-            actual_item_cls.model_validate
-            if issubclass(actual_item_cls, BaseModel)
-            else None
-        )
+        self._decode = get_decoder(item_cls)
 
     def update(self, value: T):
         self._trigger_start()
@@ -359,13 +353,3 @@ def unwrap_raw_type(type_hint: Any) -> type:
     raise ValueError(
         f"Unsupported type hint: {type_hint}. Expected LangDiff Atom, List, String, or Object subclass."
     )
-
-
-def unwrap_noneable_type(type_hint: Any) -> type:
-    """Unwraps a type hint that may be None."""
-    origin = typing.get_origin(type_hint)
-    if origin is typing.Union or origin is UnionType:
-        args = typing.get_args(type_hint)
-        if len(args) == 2 and args[1] is type(None):
-            return args[0]
-    return type_hint
