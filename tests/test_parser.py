@@ -1,10 +1,9 @@
 import json
-from typing import Union, Optional
 
 from pydantic import BaseModel
 
-from langdiff.parser.model import unwrap_raw_type, unwrap_noneable_type
 from langdiff import Field, Object, List, String, Atom, Parser, StreamingValue
+from langdiff.parser.model import unwrap_raw_type
 
 
 class Block(Object):
@@ -378,6 +377,27 @@ def test_null_pydantic_atom_non_null():
     ]  # Expect item after completion
 
 
+def test_pydantic_list_atom():
+    class Item(BaseModel):
+        name: str
+
+    class StreamingContainer(Object):
+        items: Atom[list[Item]]
+
+    container = StreamingContainer()
+    events = []
+
+    @container.items.on_complete
+    def on_items_complete(items: list[Item]):
+        events.append(("on_items_complete", items))
+
+    container.update({"items": [{"name": "item1"}, {"name": "item2"}]})
+    assert events == []
+
+    container.complete()
+    assert events == [("on_items_complete", [Item(name="item1"), Item(name="item2")])]
+
+
 def test_null_streaming_string():
     class StreamingContainer(Object):
         item: String
@@ -444,9 +464,3 @@ def test_to_pydantic():
     blocks_field = CreateBlocksModel.model_fields["blocks"]
     assert blocks_field.annotation == list[Block.to_pydantic()]
     assert blocks_field.description == "max number of blocks is 5"
-
-
-def test_unwrap_noneable_type():
-    assert unwrap_noneable_type(str | None) is str
-    assert unwrap_noneable_type(Union[str, None]) is str
-    assert unwrap_noneable_type(Optional[str]) is str
