@@ -1,12 +1,35 @@
 import typing
-from typing import Generic, Callable, Any, TypeVar
+from typing import Generic, Callable, Any, TypeVar, Annotated
 
 import pydantic
 from pydantic import BaseModel
 
+from langdiff.parser.decoder import get_decoder
+
 T = TypeVar("T")
 
 Field = pydantic.Field
+
+
+class PydanticType:
+    """A hint that specifies the Pydantic type to use when converting to Pydantic models.
+
+    This is used with typing.Annotated to provide custom type hints for Pydantic model derivation.
+
+    Example:
+        class Item(Object):
+            field: Annotated[String, PydanticType(UUID)]
+
+        When Item.to_pydantic() is called, the generated field will have type UUID instead of str.
+    """
+
+    def __init__(self, pydantic_type: Any):
+        """Initialize with the desired Pydantic type.
+
+        Args:
+            pydantic_type: The type to use in the generated Pydantic model
+        """
+        self.pydantic_type = pydantic_type
 
 
 class StreamingValue(Generic[T]):
@@ -65,12 +88,17 @@ class Object(StreamingValue[dict]):
         for key, type_hint in type(self).__annotations__.items():
             self._keys.append(key)
 
-            # handle StreamingList[T], CompleteValue[T]
-            if hasattr(type_hint, "__origin__"):
-                item_cls = typing.get_args(type_hint)[0]
-                setattr(self, key, type_hint.__origin__(item_cls))
+            # Extract base type from Annotated[T, PydanticType(...), ...]
+            base_type = type_hint
+            if typing.get_origin(type_hint) is Annotated:
+                base_type = typing.get_args(type_hint)[0]
+
+            # handle List[T], Atom[T]
+            if hasattr(base_type, "__origin__"):
+                item_cls = typing.get_args(base_type)[0]
+                setattr(self, key, base_type.__origin__(item_cls))
             else:
-                setattr(self, key, type_hint())
+                setattr(self, key, base_type())
 
     def on_update(self, func: Callable[[dict], Any]):
         """Register a callback that is called whenever the object is updated."""
@@ -121,7 +149,7 @@ class Object(StreamingValue[dict]):
         model = getattr(cls, "_pydantic_model", None)
         if model is not None:  # use cached model if available
             return model
-        fields = {}
+        fields: dict[str, Any] = {}
         for name, type_hint in cls.__annotations__.items():
             type_hint = unwrap_raw_type(type_hint)
             field = getattr(cls, name, None)
@@ -130,7 +158,7 @@ class Object(StreamingValue[dict]):
             else:
                 fields[name] = type_hint
         model = pydantic.create_model(cls.__name__, **fields, __doc__=cls.__doc__)
-        cls._pydantic_model = model
+        setattr(cls, "_pydantic_model", model)
         return model
 
 
@@ -138,7 +166,7 @@ class List(Generic[T], StreamingValue[list]):
     """Represents a JSON array that is streamed.
 
     This class can handle a list of items that are themselves `StreamingValue`s
-    (like `StreamingObject` or `StreamingString`) or complete values. It provides
+    (like `langdiff.Object` or `langdiff.String`) or complete values. It provides
     an `on_append` callback that is fired when a new item is added to the list.
     """
 
@@ -154,9 +182,7 @@ class List(Generic[T], StreamingValue[list]):
         self._value = []
         self._item_cls = item_cls
         self._item_streaming = issubclass(item_cls, StreamingValue)
-        self._decode = (
-            item_cls.model_validate if issubclass(item_cls, BaseModel) else None
-        )
+        self._decode = get_decoder(item_cls) if not self._item_streaming else None
         self._streaming_values = []
         self._on_append_funcs = []
 
@@ -270,7 +296,7 @@ class String(StreamingValue[str | None]):
         else:
             if value is None or not value.startswith(self._value):
                 raise ValueError(
-                    "StreamingString can only be updated with a continuation of the current value."
+                    "langdiff.String can only be updated with a continuation of the current value."
                 )
             if len(value) == len(self._value):
                 return
@@ -290,8 +316,8 @@ class Atom(Generic[T], StreamingValue[T]):
 
     This is useful for types like numbers, booleans, or even entire objects/lists
     that are not streamed part-by-part but are present completely once available.
-    The `on_complete` callback is triggered when the parent `StreamingObject` or
-    `StreamingList` determines that this value is complete.
+    The `on_complete` callback is triggered when the parent `langdiff.Object` or
+    `langdiff.List` determines that this value is complete.
     """
 
     _value: T | None
@@ -299,9 +325,7 @@ class Atom(Generic[T], StreamingValue[T]):
     def __init__(self, item_cls: type[T]):
         super().__init__()
         self._value = None
-        self._decode = (
-            item_cls.model_validate if issubclass(item_cls, BaseModel) else None
-        )
+        self._decode = get_decoder(item_cls)
 
     def update(self, value: T):
         self._trigger_start()
@@ -320,23 +344,53 @@ class Atom(Generic[T], StreamingValue[T]):
         return self._value
 
 
-def unwrap_raw_type(type_hint: Any) -> type:
+def _extract_pydantic_hint(type_hint: Any) -> type | None:
+    """Extract PydanticType from Annotated type if present."""
+    if typing.get_origin(type_hint) is Annotated:
+        args = typing.get_args(type_hint)
+        if len(args) >= 2:
+            # Look for PydanticType in the metadata
+            for metadata in args[1:]:
+                if isinstance(metadata, PydanticType):
+                    return metadata.pydantic_type
+    return None
+
+
+def unwrap_raw_type(type_hint: Any):
     # Possible types:
+    # - Annotated[T, PydanticType(U)] => U (custom Pydantic type)
     # - Atom[T] => T
     # - List[T] => list[unwrap(T)]
     # - String => str
-    # - T extends StreamableModel => T.to_pydantic()
+    # - T extends Object => T.to_pydantic()
+
+    # First check for PydanticType in Annotated types
+    pydantic_hint = _extract_pydantic_hint(type_hint)
+    if pydantic_hint is not None:
+        return pydantic_hint
+
+    # Handle Annotated[T, ...] by extracting the base type
+    if typing.get_origin(type_hint) is Annotated:
+        type_hint = typing.get_args(type_hint)[0]
+
     if hasattr(type_hint, "__origin__"):
         origin = type_hint.__origin__
         if origin is Atom:
             return typing.get_args(type_hint)[0]
         elif origin is List:
             item_type = typing.get_args(type_hint)[0]
-            return list[unwrap_raw_type(item_type)]
+            return list[unwrap_raw_type(item_type)]  # type: ignore[misc]
     elif type_hint is String:
         return str
     elif issubclass(type_hint, Object):
         return type_hint.to_pydantic()
+    elif issubclass(type_hint, StreamingValue):
+        to_pydantic = getattr(type_hint, "to_pydantic", None)
+        if to_pydantic is None or not callable(to_pydantic):
+            raise ValueError(
+                f"Custom StreamingValue type {type_hint} must implement to_pydantic() method."
+            )
+        return to_pydantic()
     elif (
         type_hint is str
         or type_hint is int
@@ -346,5 +400,5 @@ def unwrap_raw_type(type_hint: Any) -> type:
     ):
         return type_hint
     raise ValueError(
-        f"Unsupported type hint: {type_hint}. Expected Atom, List, String, or StreamableModel subclass."
+        f"Unsupported type hint: {type_hint}. Expected LangDiff Atom, List, String, or Object subclass."
     )
