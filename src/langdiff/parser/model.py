@@ -149,7 +149,7 @@ class Object(StreamingValue[dict]):
         model = getattr(cls, "_pydantic_model", None)
         if model is not None:  # use cached model if available
             return model
-        fields = {}
+        fields: dict[str, Any] = {}
         for name, type_hint in cls.__annotations__.items():
             type_hint = unwrap_raw_type(type_hint)
             field = getattr(cls, name, None)
@@ -158,7 +158,7 @@ class Object(StreamingValue[dict]):
             else:
                 fields[name] = type_hint
         model = pydantic.create_model(cls.__name__, **fields, __doc__=cls.__doc__)
-        cls._pydantic_model = model
+        setattr(cls, "_pydantic_model", model)
         return model
 
 
@@ -356,7 +356,7 @@ def _extract_pydantic_hint(type_hint: Any) -> type | None:
     return None
 
 
-def unwrap_raw_type(type_hint: Any) -> type:
+def unwrap_raw_type(type_hint: Any):
     # Possible types:
     # - Annotated[T, PydanticType(U)] => U (custom Pydantic type)
     # - Atom[T] => T
@@ -379,7 +379,7 @@ def unwrap_raw_type(type_hint: Any) -> type:
             return typing.get_args(type_hint)[0]
         elif origin is List:
             item_type = typing.get_args(type_hint)[0]
-            return list[unwrap_raw_type(item_type)]
+            return list[unwrap_raw_type(item_type)]  # type: ignore[misc]
     elif type_hint is String:
         return str
     elif issubclass(type_hint, Object):

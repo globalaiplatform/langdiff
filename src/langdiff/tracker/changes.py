@@ -1,6 +1,6 @@
 from typing import TypedDict, Any, NotRequired
 
-import jsonpatch
+import jsonpatch  # type: ignore[import-untyped]
 
 __all__ = [
     "Operation",

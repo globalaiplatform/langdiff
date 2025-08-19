@@ -1,6 +1,6 @@
 from typing import Any
 
-from jsonpointer import JsonPointer
+from jsonpointer import JsonPointer  # type: ignore[import-untyped]
 from pydantic import BaseModel
 
 from .change_tracker import ChangeTracker, TrackedObject, TrackedList, TrackedDict, Path
