@@ -1,6 +1,6 @@
 [project]
 name = "langdiff"
-version = "0.1.0"
+version = "0.2.0"
 description = "LangDiff is a Python library that solves the hard problems of streaming structured LLM outputs to frontends."
 readme = "README.md"
 authors = [
@@ -25,6 +25,12 @@ Documentation = "https://langdiff.readthedocs.io/en/latest/"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build]
+exclude = [
+  "/docs",
+  "/.idea",
+]
 
 [dependency-groups]
 dev = [
