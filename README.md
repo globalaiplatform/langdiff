@@ -1,5 +1,6 @@
 # ⚖️ LangDiff: Progressive UI from LLM
 
+[![build](https://img.shields.io/github/actions/workflow/status/globalaiplatform/langdiff/ci.yml?label=build)](https://github.com/globalaiplatform/langdiff/actions/workflows/ci.yml)
 [![docs](https://img.shields.io/badge/docs-latest-blue)](https://langdiff.readthedocs.io/en/latest/)
 [![pypi](https://img.shields.io/pypi/v/langdiff.svg)](https://pypi.python.org/pypi/langdiff)
 [![license](https://img.shields.io/github/license/globalaiplatform/langdiff.svg)](https://github.com/globalaiplatform/langdiff/blob/main/LICENSE)
