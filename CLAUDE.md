@@ -25,6 +25,13 @@ uv run pytest -v                # Verbose output
 uv run pytest -k "test_name"    # Run specific test by name pattern
 ```
 
+### Code Coverage
+```bash
+uv run pytest --cov=langdiff --cov-fail-under=75  # Run tests with 75% coverage requirement
+uv run pytest --cov=langdiff --cov-report=term-missing  # Show missing lines in detail
+uv run pytest --cov=langdiff                      # Basic coverage report
+```
+
 ### Linting and Formatting
 ```bash
 uv run ruff check              # Check for linting issues
