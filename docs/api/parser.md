@@ -117,7 +117,7 @@ response_format = BlogPost.to_pydantic()
 
 client = openai.OpenAI()
 with client.chat.completions.stream(
-    model="gpt-4o-mini",
+    model="gpt-5-mini",
     messages=[{"role": "user", "content": "Write a blog post"}],
     response_format=response_format,
 ) as stream:
@@ -130,7 +130,7 @@ with client.chat.completions.stream(
 
 ## Event System
 
-All streaming types support three main events:
+All streaming types support common events, with type-specific additional events:
 
 ### on_start()
 Called when streaming begins for a value:
@@ -142,12 +142,25 @@ def on_title_start():
 ```
 
 ### on_append()
-Called as new data is appended:
+Called as new data is appended (supported by `String` and `List` types):
 
 ```python
-@response.content.on_append
+@response.content.on_append  # String type
 def on_content_chunk(chunk: str):
     print(f"New content: {chunk}")
+
+@response.items.on_append  # List type
+def on_item_append(item: ld.String, index: int):
+    print(f"New item at index {index}")
+```
+
+### on_update()
+Called when an object is updated (supported by `Object` type only):
+
+```python
+@response.on_update  # Object type
+def on_object_update(data: dict):
+    print(f"Object updated: {data}")
 ```
 
 ### on_complete()

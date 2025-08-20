@@ -16,7 +16,7 @@ The parser module contains streaming-aware data types and the core parser for pr
 
 ### Key Features
 
-- **Event Callbacks**: All streaming types support `on_start`, `on_append`, and `on_complete` callbacks
+- **Event Callbacks**: All streaming types support `on_start` and `on_complete` callbacks. Additionally, `Object` supports `on_update`, while `List` and `String` support `on_append`
 - **Type Safety**: Full type hints and generic support for compile-time checking
 - **Pydantic Integration**: Convert streaming models to Pydantic models via `to_pydantic()`
 
