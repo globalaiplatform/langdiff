@@ -10,7 +10,7 @@ LangDiff provides intelligent partial parsing with granular, type-safe events as
 
 ### Streaming Parsing
 - Define schemas for streaming structured outputs using Pydantic-style models
-- Receive granular, type-safe callbacks (`on_start`, `on_complete`, and `on_append`/`on_update` depending on type) as tokens stream in
+- Receive granular, type-safe callbacks (`on_append`, `on_update`, `on_complete`) as tokens stream in.
 - Derive Pydantic models from LangDiff models for seamless interop with existing libraries and SDKs like OpenAI SDK
 
 ### Change Tracking
