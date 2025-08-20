@@ -35,5 +35,5 @@ jobs:
     - name: Run mypy
       run: uv run mypy src/
 
-    - name: Run tests
-      run: uv run pytest -v
+    - name: Run tests with coverage
+      run: uv run pytest --cov=langdiff --cov-fail-under=75
