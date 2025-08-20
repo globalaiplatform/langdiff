@@ -117,7 +117,7 @@ response_format = BlogPost.to_pydantic()
 
 client = openai.OpenAI()
 with client.chat.completions.stream(
-    model="gpt-4o-mini",
+    model="gpt-5-mini",
     messages=[{"role": "user", "content": "Write a blog post"}],
     response_format=response_format,
 ) as stream:

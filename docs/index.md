@@ -69,7 +69,7 @@ def on_section_append(section: ld.String, index: int):
 # Stream from OpenAI
 client = openai.OpenAI()
 with client.chat.completions.stream(
-    model="gpt-4o-mini",
+    model="gpt-5-mini",
     messages=[{"role": "user", "content": "Write a short article about Python"}],
     response_format=ArticleResponse.to_pydantic(),
 ) as stream:
