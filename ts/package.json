@@ -1,0 +1,58 @@
+{
+    "name": "langdiff",
+    "version": "0.2.0",
+    "description": "LangDiff is a TypeScript library that solves the hard problems of streaming structured LLM outputs to frontends.",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "test": "jest",
+        "test:watch": "jest --watch",
+        "dev": "tsc --watch",
+        "examples": "ts-node examples/index.ts",
+        "examples:basic": "ts-node examples/01-basic-streaming.ts",
+        "examples:tracking": "ts-node examples/02-change-tracking.ts",
+        "examples:openai": "ts-node examples/03-openai-integration.ts",
+        "examples:frontend": "ts-node examples/04-frontend-integration.ts",
+        "examples:article": "ts-node examples/05-article-generation.ts"
+    },
+    "keywords": [
+        "llm",
+        "streaming",
+        "json",
+        "parser",
+        "diff",
+        "typescript"
+    ],
+    "author": "Global AI Platform <contact@a15t.com>",
+    "maintainers": [
+        "Taeho Kim <thk@a15t.com>"
+    ],
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/globalaiplatform/langdiff"
+    },
+    "homepage": "https://github.com/globalaiplatform/langdiff",
+    "dependencies": {
+        "@types/fast-json-patch": "^1.0.4",
+        "fast-json-patch": "^3.1.1",
+        "openai-partial-stream": "^0.3.9",
+        "zod": "^3.25.76"
+    },
+    "devDependencies": {
+        "@types/jest": "^29.5.12",
+        "@types/node": "^20.11.30",
+        "jest": "^29.7.0",
+        "openai": "^4.28.4",
+        "ts-jest": "^29.1.2",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.4.3"
+    },
+    "engines": {
+        "node": ">=18"
+    }
+}
