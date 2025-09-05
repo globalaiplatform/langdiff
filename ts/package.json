@@ -1,11 +1,12 @@
 {
-    "name": "langdiff",
+    "name": "@langdiff/langdiff",
     "version": "0.2.0",
     "description": "LangDiff is a TypeScript library that solves the hard problems of streaming structured LLM outputs to frontends.",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
-        "dist"
+        "dist/**/*",
+        "README.md"
     ],
     "scripts": {
         "build": "tsc",
@@ -29,14 +30,16 @@
     ],
     "author": "Global AI Platform <contact@a15t.com>",
     "maintainers": [
-        "Taeho Kim <thk@a15t.com>"
+        "Taeho Kim <thk@a15t.com>",
+        "Hanju Jo <hanju.jo@a15t.com>"
     ],
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
-        "url": "https://github.com/globalaiplatform/langdiff"
+        "url": "https://github.com/globalaiplatform/langdiff",
+        "directory": "ts"
     },
-    "homepage": "https://github.com/globalaiplatform/langdiff",
+    "homepage": "https://github.com/globalaiplatform/langdiff/tree/main/ts",
     "dependencies": {
         "@types/fast-json-patch": "^1.0.4",
         "fast-json-patch": "^3.1.1",

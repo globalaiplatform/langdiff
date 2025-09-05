@@ -1,6 +1,6 @@
 # ⚖️ LangDiff: Progressive UI from LLM
 
-[![npm](https://img.shields.io/npm/v/langdiff-ts.svg)](https://www.npmjs.com/package/langdiff-ts)
+[![npm](https://img.shields.io/npm/v/@langdiff/langdiff.svg)](https://www.npmjs.com/package/@langdiff/langdiff)
 [![license](https://img.shields.io/github/license/globalaiplatform/langdiff.svg)](https://github.com/globalaiplatform/langdiff/blob/main/LICENSE)
 [![Global AI Platform](https://img.shields.io/badge/made%20by-Global%20AI%20Platform-646EFF)](https://globalaiplatform.com/)
 
@@ -95,13 +95,13 @@ data: {"op": "append", "path": "/items/1", "value": "ags"}
 ### Installation
 
 ```bash
-npm install langdiff
+npm install @langdiff/langdiff
 ```
 
 For yarn:
 
 ```bash
-yarn add langdiff
+yarn add @langdiff/langdiff
 ```
 
 ### Streaming Parsing
@@ -115,7 +115,7 @@ then streaming each section's content as it's written.
 Start by defining model classes that specify your streaming structure:
 
 ```typescript
-import * as ld from 'langdiff';
+import * as ld from '@langdiff/langdiff';
 
 const ArticleGenerationResponse = ld.object({
   sectionTitles: ld.array(ld.string()),
@@ -168,7 +168,7 @@ Create a streaming parser with `Parser` and feed token chunks from your LLM stre
 ```typescript
 import OpenAI from 'openai';
 import { zodResponseFormat } from 'openai/helpers/zod';
-import { Parser } from 'langdiff';
+import { Parser } from '@langdiff/langdiff';
 
 const client = new OpenAI();
 
@@ -208,7 +208,7 @@ Access the accumulated changes using `diffBuf.flush()`:
 
 ```typescript
 import OpenAI from 'openai';
-import { Parser, trackChange } from 'langdiff';
+import { Parser, trackChange } from '@langdiff/langdiff';
 
 const client = new OpenAI();
 
