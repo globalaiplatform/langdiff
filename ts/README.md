@@ -6,7 +6,7 @@
 
 LangDiff is a TypeScript library that solves the hard problems of streaming structured LLM outputs to frontends.
 
-![Diagram](./docs/diagram.png)
+![Diagram](/ts/docs/diagram.png)
 
 LangDiff provides intelligent partial parsing with granular, type-safe events as JSON structures build token by token, plus automatic JSON Patch generation for efficient frontend synchronization. Build responsive AI applications where your backend structures and frontend experiences can evolve independently. Read more about it on the [Motivation](#motivation) section.
 
@@ -110,7 +110,7 @@ Suppose you want to generate a multi-section article with an LLM. Rather than wa
 you can stream the article progressively by first generating section titles as they're determined, 
 then streaming each section's content as it's written.
 
-![Demo Video](./docs/demo.gif)
+![Demo Video](/docs/demo.gif)
 
 Start by defining model classes that specify your streaming structure:
 
@@ -292,7 +292,7 @@ LangDiff enables you to build responsive, maintainable AI applications where the
 
 ## License
 
-Apache-2.0. See the [LICENSE](./LICENSE) file for details.
+Apache-2.0. See the [LICENSE](/LICENSE) file for details.
 
 ## Examples
 
@@ -352,4 +352,4 @@ npx ts-node examples/01-basic-streaming.ts
 npx ts-node examples/05-article-generation.ts
 ```
 
-See the [`examples/`](./examples/) directory for detailed implementations and the [`examples/README.md`](./examples/README.md) for comprehensive documentation.
+See the [`examples/`](/ts/examples/) directory for detailed implementations and the [`examples/README.md`](/ts/examples/README.md) for comprehensive documentation.

@@ -1,82 +1,96 @@
 # LangDiff
 
-LangDiff is a Python library that solves the hard problems of streaming structured LLM outputs to frontends.
+LangDiff is a TypeScript library that solves the hard problems of streaming structured LLM outputs to frontends.
 
-![Diagram](./diagram.png)
+![Diagram](/ts/docs/diagram.png)
 
 LangDiff provides intelligent partial parsing with granular, type-safe events as JSON structures build token by token, plus automatic JSON Patch generation for efficient frontend synchronization. Build responsive AI applications where your backend structures and frontend experiences can evolve independently.
 
 ## Core Features
 
 ### Streaming Parsing
-- Define schemas for streaming structured outputs using Pydantic-style models
-- Receive granular, type-safe callbacks (`on_append`, `on_update`, `on_complete`) as tokens stream in
-- Derive Pydantic models from LangDiff models for seamless interop with existing libraries and SDKs like OpenAI SDK
+- Define schemas for streaming structured outputs using class-based models
+- Receive granular, type-safe callbacks (`onAppend`, `onUpdate`, `onComplete`) as tokens stream in
+- Convert to Zod schemas for seamless interop with existing libraries and SDKs like OpenAI SDK
 
 ### Change Tracking
-- Track mutations without changing your code patterns by instrumenting existing Pydantic models, or plain Python dict/list/objects
+- Track mutations without changing your code patterns by instrumenting existing objects and arrays
 - Generate JSON Patch diffs automatically for efficient state synchronization between frontend and backend
 
-```python
-@response.text.on_append
-def on_text_append(chunk: str, index: int):
-    ui.body[-1] = ui.body[-1][5:-6]  # remove <ins> tags
-    ui.body.append(f"<ins>{chunk}</ins>")
+```typescript
+response.text.onAppend((chunk: string) => {
+  ui.body[ui.body.length - 1] = ui.body[ui.body.length - 1].slice(5, -6); // remove <ins> tags
+  ui.body.push(`<ins>${chunk}</ins>`);
+});
 
-# Tracked UI changes:
-# {"op": "add", "path": "/body", "value": "<ins>Hell</ins>"}
-# {"op": "replace", "path": "/body/0", "value": "Hell"}
-# {"op": "add", "path": "/body", "value": "<ins>o, world!</ins>"}
+// Tracked UI changes:
+// {"op": "add", "path": "/body/-", "value": "<ins>Hell</ins>"}
+// {"op": "replace", "path": "/body/0", "value": "Hell"}
+// {"op": "add", "path": "/body/-", "value": "<ins>o, world!</ins>"}
 ```
 
 ## Installation
 
 ```bash
-uv add langdiff
+npm install langdiff
 ```
 
-For pip:
+For yarn:
 
 ```bash
-pip install langdiff
+yarn add langdiff
 ```
 
 ## Quick Example
 
-```python
-import langdiff as ld
-import openai
+```typescript
+import * as ld from 'langdiff';
+import OpenAI from 'openai';
 
-class ArticleResponse(ld.Object):
-    title: ld.String
-    sections: ld.List[ld.String]
+class ArticleResponse extends ld.Object {
+  title!: ld.String;
+  sections!: ld.List<ld.String>;
 
-# Set up streaming callbacks
-response = ArticleResponse()
+  protected _initializeFields(): void {
+    this.addField('title', new ld.String());
+    this.addField('sections', new ld.List(ld.String));
+  }
+}
 
-@response.title.on_append
-def on_title_chunk(chunk: str):
-    print(f"Title: {chunk}", end="", flush=True)
+// Set up streaming callbacks
+const response = new ArticleResponse();
 
-@response.sections.on_append  
-def on_section_append(section: ld.String, index: int):
-    print(f"\n\nSection {index + 1}:")
-    
-    @section.on_append
-    def on_section_chunk(chunk: str):
-        print(chunk, end="", flush=True)
+response.title.onAppend((chunk: string) => {
+  process.stdout.write(`Title: ${chunk}`);
+});
 
-# Stream from OpenAI
-client = openai.OpenAI()
-with client.chat.completions.stream(
-    model="gpt-4o-mini",
-    messages=[{"role": "user", "content": "Write a short article about Python"}],
-    response_format=ArticleResponse.to_pydantic(),
-) as stream:
-    with ld.Parser(response) as parser:
-        for event in stream:
-            if event.type == "content.delta":
-                parser.push(event.delta)
+response.sections.onAppend((section: ld.String, index: number) => {
+  console.log(`\n\nSection ${index + 1}:`);
+  
+  section.onAppend((chunk: string) => {
+    process.stdout.write(chunk);
+  });
+});
+
+// Stream from OpenAI
+const client = new OpenAI();
+const stream = await client.chat.completions.create({
+  model: "gpt-4o-mini",
+  messages: [{ role: "user", content: "Write a short article about TypeScript" }],
+  response_format: { type: "json_object" },
+  stream: true
+});
+
+const parser = new ld.Parser(response);
+
+for await (const chunk of stream) {
+  const content = chunk.choices[0]?.delta?.content;
+  if (content) {
+    parser.push(content);
+  }
+}
+
+parser.complete();
 ```
 
 ## Why LangDiff?
