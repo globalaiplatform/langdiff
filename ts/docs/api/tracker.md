@@ -99,7 +99,7 @@ interface DiffBuffer {
 ### Basic Change Tracking
 
 ```typescript
-import { trackChange } from 'langdiff';
+import { trackChange } from '@langdiff/langdiff';
 
 interface UserProfile {
   name: string;
@@ -132,7 +132,7 @@ console.log(changes);
 ### Different Tracker Types
 
 ```typescript
-import { trackChange, JSONPatchChangeTracker, EfficientJSONPatchChangeTracker } from 'langdiff';
+import { trackChange, JSONPatchChangeTracker, EfficientJSONPatchChangeTracker } from '@langdiff/langdiff';
 
 // Standard JSON Patch (RFC 6902 compliant)
 const [profile1, diffBuf1] = trackChange(
@@ -176,7 +176,7 @@ const changes = diffBuf.flush();
 ### Applying Changes
 
 ```typescript
-import { applyChange } from 'langdiff';
+import { applyChange } from '@langdiff/langdiff';
 
 // Original object
 const original = { count: 0, items: [] as string[] };
@@ -197,15 +197,12 @@ console.log(original);
 ### Integration with Streaming Parser
 
 ```typescript
-import { StreamingObject, StreamingString, Parser, trackChange } from 'langdiff';
+import * as ld from '@langdiff/langdiff';
 
-class Response extends StreamingObject {
-  content!: StreamingString;
-  
-  protected _initializeFields(): void {
-    this.addField('content', new StreamingString());
-  }
-}
+// Define schema using modern API
+const Response = ld.object({
+  content: ld.string()
+});
 
 // Create tracked UI state
 interface UIState {
@@ -219,7 +216,7 @@ const [uiState, diffBuf] = trackChange<UIState>({
 });
 
 // Set up streaming response
-const response = new Response();
+const response = Response.create();
 response.content.onAppend((chunk: string) => {
   uiState.displayText += chunk; // Tracked as append operations
 });
@@ -229,7 +226,7 @@ response.onComplete(() => {
 });
 
 // Parse streaming JSON
-const parser = new Parser(response);
+const parser = new ld.Parser(response);
 parser.push('{"content": "Hello');
 parser.push(' world!"}');
 parser.complete();

@@ -44,7 +44,7 @@ yarn add langdiff
 ## Quick Example
 
 ```typescript
-import * as ld from 'langdiff';
+import * as ld from '@langdiff/langdiff';
 import OpenAI from 'openai';
 
 class ArticleResponse extends ld.Object {

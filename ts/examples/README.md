@@ -96,7 +96,7 @@ export OPENAI_API_KEY=your-key-here
 ### Basic Streaming Pattern
 
 ```typescript
-import { StreamingObject, StreamingString, Parser } from 'langdiff';
+import { StreamingObject, StreamingString, Parser } from '@langdiff/langdiff';
 
 class MyResponse extends StreamingObject {
   message!: StreamingString;
@@ -118,7 +118,7 @@ parser.complete();
 ### Change Tracking Pattern
 
 ```typescript
-import { trackChange, applyChange } from 'langdiff';
+import { trackChange, applyChange } from '@langdiff/langdiff';
 
 const [state, diffBuffer] = trackChange({ items: [] });
 state.items.push('new item');

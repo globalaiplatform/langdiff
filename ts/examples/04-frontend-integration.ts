@@ -193,7 +193,7 @@ function ReactComponentExample() {
   
   const reactExample = `
 import React, { useState, useEffect } from 'react';
-import { trackChange, applyChange } from 'langdiff';
+import { trackChange, applyChange } from '@langdiff/langdiff';
 
 function ChatComponent() {
   const [chatState, setChatState] = useState({
@@ -270,7 +270,7 @@ function VueComponentExample() {
 </template>
 
 <script>
-import { trackChange, applyChange } from 'langdiff';
+import { trackChange, applyChange } from '@langdiff/langdiff';
 
 export default {
   data() {

@@ -7,7 +7,7 @@ export {
   StreamingObject,
 } from './parser/model';
 
-// Schema builder functions (use with: import * as ld from 'langdiff')
+// Schema builder functions (use with: import * as ld from '@langdiff/langdiff')
 export {
   string,
   array,
