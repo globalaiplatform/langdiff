@@ -1,5 +1,6 @@
 # ⚖️ LangDiff: Progressive UI from LLM
 
+[![build](https://img.shields.io/github/actions/workflow/status/globalaiplatform/langdiff/ci.yml?label=build)](https://github.com/globalaiplatform/langdiff/actions/workflows/ci.yml)
 [![docs](https://img.shields.io/badge/docs-latest-blue)](https://langdiff.readthedocs.io/en/latest/)
 [![pypi](https://img.shields.io/pypi/v/langdiff.svg)](https://pypi.python.org/pypi/langdiff)
 [![license](https://img.shields.io/github/license/globalaiplatform/langdiff.svg)](https://github.com/globalaiplatform/langdiff/blob/main/LICENSE)
@@ -7,7 +8,7 @@
 
 LangDiff is a Python library that solves the hard problems of streaming structured LLM outputs to frontends.
 
-![Diagram](./docs/diagram.png)
+![Diagram](/docs/diagram.png)
 
 LangDiff provides intelligent partial parsing with granular, type-safe events as JSON structures build token by token, plus automatic JSON Patch generation for efficient frontend synchronization. Build responsive AI applications where your backend structures and frontend experiences can evolve independently. Read more about it on the [Motivation](#motivation) section.
 
@@ -111,7 +112,7 @@ Suppose you want to generate a multi-section article with an LLM. Rather than wa
 you can stream the article progressively by first generating section titles as they're determined, 
 then streaming each section's content as it's written.
 
-![Demo Video](./docs/demo.gif)
+![Demo Video](/docs/demo.gif)
 
 Start by defining model classes that specify your streaming structure:
 
@@ -264,12 +265,11 @@ LangDiff enables you to build responsive, maintainable AI applications where the
 
 ## License
 
-Apache-2.0. See the [LICENSE](./LICENSE) file for details.
+Apache-2.0. See the [LICENSE](/LICENSE) file for details.
 
 ## Demo
 
-See [`example.py`](./example.py) for a runnable end-to-end demo using streaming parsing and diff tracking.
-
+See [`py/example.py`](/py/example.py) for a runnable end-to-end demo using streaming parsing and diff tracking.
 
 ## Star History
 
