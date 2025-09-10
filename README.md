@@ -270,3 +270,7 @@ Apache-2.0. See the [LICENSE](/LICENSE) file for details.
 ## Demo
 
 See [`py/example.py`](/py/example.py) for a runnable end-to-end demo using streaming parsing and diff tracking.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=globalaiplatform/langdiff&type=Date)](https://www.star-history.com/#globalaiplatform/langdiff&Date)
